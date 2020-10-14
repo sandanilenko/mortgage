@@ -10,7 +10,7 @@ from settings import (
     FIRST_PAYMENT_DATE,
     INITIAL_INSTALMENT,
     MONTHLY_PAYMENT_CHANGES,
-    PERCENTS_RATE,
+    PERCENTS_RATES,
     REALTY_COST,
 )
 
@@ -20,7 +20,7 @@ if __name__ == '__main__':
         realty_cost=REALTY_COST,
         initial_instalment=INITIAL_INSTALMENT,
         first_payment_date=FIRST_PAYMENT_DATE,
-        percents_rate=PERCENTS_RATE,
+        percents_rates=PERCENTS_RATES,
         monthly_payment_changes=MONTHLY_PAYMENT_CHANGES,
         early_repayments=EARLY_REPAYMENTS,
         credit_period=CREDIT_PERIOD,

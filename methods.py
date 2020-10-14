@@ -26,13 +26,13 @@ class CalculateMethod:
         realty_cost: Decimal,
         initial_instalment: Decimal,
         first_payment_date: date,
-        percents_rate: Decimal,
+        percents_rates: Dict[date, Decimal],
         credit_period: int,
     ):
         self._realty_cost = realty_cost
         self._initial_instalment = initial_instalment
         self._first_payment_date = first_payment_date
-        self._percents_rate = percents_rate
+        self._percents_rates = percents_rates
         self._credit_sum = realty_cost - initial_instalment
         self._credit_period = credit_period
 
@@ -74,8 +74,6 @@ class AnnuityCalculateMethod(CalculateMethod):
         self._changed_regular_payment = Decimal()
         self._main_month_main_payment = Decimal()
         self._all_payment = 0
-
-        self._index = Decimal(self._percents_rate / 100 / 12)
 
     def _calculate_percent_payment(self):
         """
@@ -141,8 +139,6 @@ class AnnuityCalculateMethod(CalculateMethod):
             (pow(self._index + 1, self._credit_period) - 1)
         )
 
-        self._calculate_percent_payment()
-
         if self._date_next in self._monthly_payment_changes:
             self._changed_regular_payment = (
                 self._monthly_payment_changes[self._date_next]
@@ -174,6 +170,7 @@ class AnnuityCalculateMethod(CalculateMethod):
             (
                 self._date_next.strftime('%b/%d/%Y'),
                 annuity_payment,
+                f'{self._percents_rate:.1f}%',
                 self._percents_payment,
                 self._main_month_main_payment,
                 self._credit_sum,
@@ -183,11 +180,27 @@ class AnnuityCalculateMethod(CalculateMethod):
         self._first_payment_date = self._date_next
         self._credit_period -= 1
 
+    def _prepare_percent_rate(self):
+        """
+        Установка ставки по ипотеки. Возможно рефинансирование
+        """
+        for change_percent_date in self._percents_rates.keys():
+            if change_percent_date <= self._first_payment_date:
+                self._percents_rate = self._percents_rates[change_percent_date]
+            else:
+                break
+
+    def _prepare_index(self):
+        self._index = Decimal(self._percents_rate / 100 / 12)
+
     def calculate(self):
         """
         Расчет графика платежей для аннуитентного метода
         """
         for _ in range(self._credit_period):
+            self._prepare_percent_rate()
+            self._prepare_index()
+            self._calculate_percent_payment()
             self._calculate_month_payment()
 
             if self._credit_sum <= 0:
